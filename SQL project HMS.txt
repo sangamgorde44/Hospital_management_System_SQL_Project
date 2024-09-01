@@ -1,0 +1,348 @@
+Create Database HMS_db;
+use HMS_db;
+
+Create table Administrator(a_id int Primary Key,a_name Varchar(20) Not Null,Hospital_Name Varchar(20),Pwd Varchar(15),CHECK (Pwd IN ("NS_T_H+_dbase")));
+
+Create table Doctor(Doctor_id int Primary Key,Doctor_name Varchar(15) Not Null,Qualification Varchar(15) Not Null,a_id Int, 
+foreign key(a_id) references Administrator(a_id) on delete cascade);
+
+Create table Staff(s_name Varchar(15) Not Null,s_id Int Primary Key ,salary Int Not Null,a_id Int, 
+foreign key(a_id) references Administrator(a_id) on delete cascade);
+
+Create table Lab(lab_no int Primary key,Patient_id int Not Null,Age Int not null,weight int Not Null,date Date Not Null,disease Varchar(20) Not Null,
+amount Int Not Null,Doctor_id int ,foreign key(Doctor_id) references Doctor(Doctor_id) on delete cascade);
+
+Create table  Inpatient(Patient_id int Primary Key,name Varchar(20) Not Null,gender Varchar(10) Not Null,address Varchar(20) Not Null,date_of_admit Date Not Null,
+date_of_discharge Date Not Null,disease Varchar(20) Not Null,advance Int Not Null,lab_no int,foreign key(lab_no) references Lab(lab_no) on delete cascade,
+Doctor_id Int,foreign key(Doctor_id) references Doctor(Doctor_id) on delete cascade);
+
+Create table Outpatient(Patient_id int Primary Key,date Date Not Null,lab_no int ,foreign key(lab_no) references Lab(lab_no) on delete cascade);
+
+Create table Bill (bill_no int Primary Key,doctor_charge int Not Null,number_of_days int not Null,nursing_charge int not Null,medicine_charge int Not Null,
+advance int Not Null,lab_charge int Not Null,Patient_id int ,foreign key(Patient_id) references Inpatient(Patient_id) on delete cascade);
+
+Drop Table   Administrator;
+
+
+========================================================================================================================
+
+use HMS_db;
+/*Add column In Administrator Table */
+Alter Table Administrator 
+add column gender Varchar(10) Not Null;
+
+Insert into Administrator Values(100,"Nilesh Sabale","Tech_Health+","NS_T_H+_dbase","Male");
+
+Select * from Administrator;
+
+Truncate Table Administrator;
+/* Create User */
+CREATE USER Singham IDENTIFIED BY "NS_T_H+";
+Grant Select,insert
+On hms_db.inpatient
+To Singham;
+Revoke insert,Select
+On  hms_db.inpatient
+From Singham;
+/*To view priviledges in MySQL We use data dictionary*/
+Select * from information_schema.user_privileges;
+Select * from information_schema.user_privileges where grantee like "'Singham'%";
+SHOW GRANTS FOR Singham;
+/*Drop user*/
+Drop user Singham;
+
+
+=====================================================================================================================
+
+use HMS_db;
+Insert into Administrator Values(100,"Nilesh Sabale","Male");
+Insert into Doctor Values(43,"Meher Atharva","MBBS",100);
+Insert into Doctor Values(44,"Gorde Sangam","MD",100);
+Insert into Doctor Values(45,"Sasane Aditya","BHMS",100);
+Insert into Doctor Values(46,"Savale Tejal","MBBS",100);
+Insert into Doctor Values(47,"Shedage Avadhut","MBBS",100);
+Insert into Doctor Values(48,"Selake Pranav","BHMS",100);
+Select * from Doctor;
+/*Update  Doctor
+ set Doctor_name="Sasane Aditya" where Doctor_id=45;*/
+
+
+======================================================================================================================
+
+use HMS_db;
+Insert into Doctor Values(43,"Meher Atharva","MBBS",100);
+Insert into Doctor Values(44,"Gorde Sangam","MD",100);
+Insert into Doctor Values(45,"Sasane Aditya","BHMS",100);
+Insert into Doctor Values(46,"Savale Tejal","MBBS",100);
+Insert into Doctor Values(47,"Shedage Avadhut","MBBS",100);
+Insert into Doctor Values(48,"Selake Pranav","BHMS",100);
+Select * from Doctor;
+
+/*Use of Group by and order by clauses on  Doctor table(Qualification) */
+Select Qualification, Count(Doctor_id) as 'No. of Doctors' from Doctor group by Qualification order by Count(Doctor_id);
+
+/*Update  Doctor info:*/
+Update  Doctor
+set Doctor_name="Sasane Aditya" where Doctor_id=45;
+ 
+ Truncate Table Doctor;
+ 
+========================================================================================================================
+
+/* Increment Staff Salary (Inplicit Cursor)*/
+Create table Staff(s_name Varchar(15) Not Null,s_id Int Primary Key ,salary Int Not Null,a_id Int);
+Insert into Staff values('Harish S.',111,10000,100);
+Insert into Staff values('Nitin P.',112,12000,100);
+Insert into Staff values('Avi P.',113,15000,100);
+Insert into Staff values('Alka P.',114,18000,100);
+Insert into Staff values('Ashu L.',115,9000,100);
+Insert into Staff values('Shubh K.',116,20000,100);
+Insert into Staff values('Dips G.',117,30000,100);
+Select * from Staff;
+/*Increment staff Emp Salary*/
+Declare
+    VNumber number(10);
+Begin
+    Update Staff
+    Set salary = ( salary + 1000 )
+    where s_id = 112;
+    VNumber:= SQL%ROWCOUNT;
+    If Sql%FOUND Then
+    DBMS_OUTPUT.PUT_LINE('Salary of '||VNumber||'Of Employee Updated successfully!!!');
+    Else
+     DBMS_OUTPUT.PUT_LINE('Something  Wrong !!!');
+    End If;
+End;
+
+=========================================================================================================================
+
+Use HMS_db;
+Insert into Inpatient Values(1111,"Aditya K.","Male","At:Paithan",'2021-05-01','2021-06-20',"Fever",1000,1,43);
+Insert into Inpatient Values(2222,"Pratik B.","Male","At:Alkuti",'2021-05-08','2021-05-18',"Cold",1000,2,48);
+Insert into Inpatient Values(3333,"Anu B.","Female","At:Belhe",'2021-05-09','2021-05-20',"Flue",10000,3,46);
+Insert into Inpatient Values(4444,"Sonu P.","Female","At:Maval",'2021-05-10','2021-05-22',"Flue",10000,4,46);
+Insert into Inpatient Values(5555,"Sahil G.","Male","At:Darodi",'2021-05-20','2021-05-26',"Cough",1000,5,45);
+Insert into Inpatient Values(6666,"Sumit K.","Male","At:Loni",'2021-05-21','2021-05-30',"Body Pain",1000,6,47);
+Insert into Inpatient Values(7777,"Anil B.","Male","At:Alle",'2021-05-22','2021-06-20',"Covid-19",20000,7,44);
+Insert into Inpatient Values(8888,"Sanket K.","Male","At:Pabal",'2021-05-30','2021-06-20',"Covid-19",20000,8,44);
+Insert into Inpatient Values(9999,"Amar.","Male","At:Randhe",'2021-06-12','2021-06-30',"Covid-19",20000,9,44);
+Select * from Inpatient;
+
+Select * from Inpatient where Gender="Female";
+Select * from Inpatient Where date_of_admit Between '2021-05-08' and '2021-05-30';
+/*Save Change Permanent */
+Commit;
+Truncate Table Inpatient;
+/* Calculate How many days Patient addmited in Hospital*/
+Select TimestampDiff(Day,'2021-05-30','2021-06-20');
+
+=======================================================================================================================
+
+/*Lab-Patient on high risk(Ex.Cursor)*/
+Create table Lab(lab_no int Primary key,Patient_id int Not Null,Age int not null,weight int Not Null,Adate varchar(20) Not Null,disease Varchar(20) Not Null,
+amount Int Not Null,Doctor_id int);
+Insert into lab Values(1,1111,19,66,'2021-05-01','Fever',5000,43);
+Insert into lab Values(2,2222,18,64,'2021-05-08','Cold',500,48);
+Insert into lab Values(3,3333,88,56,'2021-05-09','Flue',10000,46);
+Insert into lab Values(4,4444,40,80,'2021-05-10','Flue',5000,46);
+Insert into lab Values(5,5555,30,70,'2021-05-20','Cough',1000,45);
+Insert into lab Values(6,6666,90,56,'2021-05-21','Body Pain',300,47);
+Insert into lab Values(7,7777,55,90,'2021-05-22','Covid-19',50000,44);
+Insert into lab Values(8,8888,48,99,'2021-05-30','Covid-19',55000,44);
+Insert into lab Values(9,9999,80,77,'2021-06-12','Covid-19',1000,44);
+Select * from lab;
+
+Declare
+    LabNo Lab.Lab_no%Type;
+    P_id  Lab.Patient_id%type;
+    P_age Lab.Age%type;
+    P_weight Lab.Weight%type;
+    P_Disease Lab.disease%type;
+    Cursor PatientCursor
+    IS 
+    Select Lab_no,Patient_id,Age,Weight,disease 
+    From Lab
+    where Age>70;
+Begin
+    If Not PatientCursor%ISOPEN then
+        OPEN PatientCursor;
+    End if;
+    Dbms_Output.Put_Line('>--------------------Patient on High Risk----------------------<');
+      Dbms_Output.Put_Line('                                                              ');
+    Dbms_Output.Put_Line('|---------|---------------|--------|-----------|---------------|');
+    Dbms_Output.Put_Line('  Lab_no      Patient_id     Age      Weight       desease ');
+    Dbms_Output.Put_Line('|---------|---------------|--------|-----------|---------------|');
+        LOOP
+            Fetch  PatientCursor into  LabNo, P_id,P_age,P_weight,  P_Disease;
+             Exit when  PatientCursor%NOTFOUND;
+        Dbms_Output.Put_Line( '    '|| LabNo||'          '||     P_id  ||'           '||   P_age || '       '  ||P_weight   ||'          '||   P_Disease );
+    End Loop;
+    Dbms_Output.Put_Line('|---------|---------------|--------|-----------|---------------|');
+    Dbms_Output.Put_Line('>--------------------------------------------------------------<');
+    Dbms_Output.Put_Line('    ' ||PatientCursor%ROWCOUNT||' Rows selected');
+    Dbms_Output.Put_Line('>--------------------------------------------------------------<');
+     CLOSE PatientCursor; 
+    End;
+    
+    
+===============================================================================================================================
+
+Create table Staff(s_name Varchar(15) Not Null,s_id Int Primary Key ,salary Int Not Null,a_id Int);
+Insert into Staff values('Harish S.',111,10000,100);
+Insert into Staff values('Nitin P.',112,12000,100);
+Insert into Staff values('Avi P.',113,15000,100);
+Insert into Staff values('Alka P.',114,18000,100);
+Insert into Staff values('Ashu L.',115,9000,100);
+Insert into Staff values('Shubh K.',116,20000,100);
+Insert into Staff values('Dips G.',117,30000,100);
+Select * from Staff;
+Declare
+    S_Name Staff.s_name%type;
+    S_Id Staff.s_id %type;
+    S_salary Staff.salary%type;
+    Staff_id Number(4):=111;
+    Invalid_Sid Exception;
+Begin
+    If  Staff_id > 110 
+    then
+      If Staff_id > 117 then 
+         Raise  Invalid_Sid;
+      Else
+        Select s_name,s_id,salary
+        Into  S_Name, S_Id, S_salary
+         From Staff
+        where s_id=Staff_id;
+        dbms_output.put_line('****Stsff Employee Info*****');
+        dbms_output.put_line('***.....................****');
+        dbms_output.put_line('Employee Id :    '||S_Id);
+        dbms_output.put_line('Employee Name :  '||S_Name);
+        dbms_output.put_line('Employee Salary: '||S_salary);
+        dbms_output.put_line('----....................----');
+       End IF;
+     Else
+      Raise  Invalid_Sid;
+    End IF;
+    Exception
+         When Invalid_Sid Then
+         dbms_output.put_line('Enter valid or correct Employee Id!!!!');
+   End;
+    
+	
+=============================================================================================================================
+
+Use HMS_db;
+Insert Into Outpatient Values(9999,'2021-06-30',9);
+Insert Into Outpatient Values(6666,'2021-05-30',6);
+Insert Into Outpatient Values(4444,'2021-05-22',4);
+Select * from Outpatient;
+
+/* Count No. of Outpatient */
+Select Count(Patient_id) as ' No. of Outpatient ' from Outpatient; 
+
+/*To Identify OutPatient disease */
+Select o.Patient_id,o.date,l.lab_no ,l.disease,l.Doctor_id from Outpatient o 
+INNER JOIN Lab l
+ON l.lab_no=o.lab_no;
+
+Truncate Table Outpatient;
+
+==============================================================================================================================
+
+Create table Bill (bill_no int Primary Key,doctor_charge int Not Null,number_of_days int not Null,nursing_charge int not Null,medicine_charge int Not Null,
+advance int Not Null,lab_charge int Not Null,Patient_id int );
+Insert into Bill Values(111,11000,50,30000,50000,1000,5000,1111);
+Insert into Bill Values(222,3000,10,4000,15000,1000,500,2222);
+Insert into Bill Values(333,3500,11,4200,16000,10000,10000,3333);
+Insert into Bill Values(444,4000,12,5000,17000,10000,5000,4444);
+Insert into Bill Values(555,1500,6,2000,7000,1000,1000,5555);
+Insert into Bill Values(666,2500,9,3500,14000,1000,300,6666);
+Insert into Bill Values(777,8000,29,20000,40000,20000,50000,7777);
+Insert into Bill Values(888,6500,21,18000,35000,20000,55000,8888);
+Insert into Bill Values(999,5500,18,16000,30000,20000,1000,9999);
+Select * from Bill;
+
+Declare 
+    doc_charge  Bill.doctor_charge%type; 
+    nurse_Charges  Bill.nursing_charge%Type; 
+    medicine_charges  Bill.medicine_charge%Type; 
+    lab_charges  Bill.lab_charge%Type; 
+    advance_RS  Bill.lab_charge%Type; 
+    P_id  Bill.Patient_id%Type; 
+    Bill_no  Bill.bill_no%Type; 
+    Total Number(10); 
+    Total_Bill Number(10); 
+Begin 
+    Select doctor_charge,nursing_charge,medicine_charge,lab_charge,advance,Patient_id,bill_no 
+    Into doc_charge,nurse_Charges, medicine_charges,lab_charges,advance_RS,P_id,Bill_no 
+    From Bill 
+    Where Patient_id=3333; 
+    Total:=(doc_charge+nurse_Charges+medicine_charges+lab_charges); 
+    Total_Bill:=Total-advance_RS; 
+     Dbms_Output.Put_Line('->>>>>>"Tech Health+" Hospital<<<<<<<-'); 
+     Dbms_Output.Put_Line('...............................................'); 
+      Dbms_Output.Put_Line('Bill_no. :   '||Bill_no); 
+      Dbms_Output.Put_Line('Patient Id : '||P_id); 
+    Dbms_Output.Put_Line('|------------------|----------|'); 
+    Dbms_Output.Put_Line(' Essential charges     Amount'); 
+    Dbms_Output.Put_Line('|------------------|----------|'); 
+    Dbms_Output.Put_Line(' doctor_charge         '||doc_charge); 
+    Dbms_Output.Put_Line(' nursing_charge        '||nurse_Charges); 
+    Dbms_Output.Put_Line(' medicine_charge       '||medicine_charges); 
+    Dbms_Output.Put_Line(' lab_charge            '||lab_charges); 
+    Dbms_Output.Put_Line(' Total Amount:         '||Total); 
+    Dbms_Output.Put_Line('|------------------|----------|'); 
+    Dbms_Output.Put_Line(' Your Advance :        '||advance_RS); 
+    Dbms_Output.Put_Line('...............................................'); 
+    Dbms_Output.Put_Line('Final Total Bill in (Rs.) : '|| Total_Bill||'/-'); 
+End;
+    
+================================================================================================================================
+
+/*Add Dead patient in out patient Table (Store function)*/
+Create table Outpatient(Patient_id int Primary Key,Dead_date varchar(15) Not Null,lab_no int);
+Insert Into Outpatient Values(9999,'2021-06-30',9);
+Insert Into Outpatient Values(6666,'2021-05-30',6);
+Insert Into Outpatient Values(4444,'2021-05-22',4);
+Declare
+Procedure INSERT_Outpatient(Pid in Number,Add_date in varchar,LabNo in number)
+As
+	Begin
+		Insert into Outpatient(Patient_id ,Dead_date ,lab_no)
+        Values(Pid ,Add_date ,LabNo );
+	End;
+Begin
+INSERT_Outpatient(7777,'2021-06-20',7); 
+End;
+/
+select * from Outpatient;
+drop table Outpatient;
+
+================================================================================================================================
+
+CREATE VIEW `covid_19_patient` AS Select Patient_id,name,gender,date_of_admit,lab_no from Inpatient
+where disease="Covid-19";
+Select * from Covid_19_Patient;
+
+Drop View Covid_19_Patient;
+
+================================================================================================================================
+
+Use HMS_db;
+
+/*Covid-19 Patient View*/
+
+Create View Covid_19_Patient
+As
+Select Patient_id,name,gender,date_of_admit,lab_no from Inpatient
+where disease="Covid-19";
+Select * from Covid_19_Patient;
+
+Drop View Covid_19_Patient;
+
+
+
+
+
+
+
+
